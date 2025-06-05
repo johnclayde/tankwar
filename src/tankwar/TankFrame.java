@@ -1,5 +1,6 @@
 package tankwar;
 
+import java.awt.Color;
 import java.awt.Frame;
 
 import java.awt.Graphics;
@@ -8,11 +9,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TankFrame extends Frame {
 	public static final int GAME_WIDTH=800, GAME_HEIGHT=600;
 	private Tank myTank;
-	
+	List<Bullet> bullets ;
 	
 	public TankFrame() {
 		this.setSize(GAME_WIDTH, GAME_HEIGHT);
@@ -20,7 +23,8 @@ public class TankFrame extends Frame {
 		this.setVisible(true);
 		this.setTitle("TANK WAR");
 		
-		myTank = new Tank(200,200, Direction.DOWN);
+		myTank = new Tank(200,200, Direction.DOWN, this);
+		bullets = new ArrayList<Bullet>();
 		
 		this.addWindowListener(new WindowAdapter() {
 			@Override
@@ -36,9 +40,22 @@ public class TankFrame extends Frame {
 	@Override
 	public void paint(Graphics g) {
 		myTank.paint(g);
+		for( int i = 0; i < bullets.size(); i++) {
+			if(bullets.get(i).isLiving()) {
+				bullets.get(i).paint(g);
+			} else {bullets.remove(i);}
+		}
+		displayInfo(g);
 
 	}
 	
+	private void displayInfo(Graphics g) {
+
+		Color c = g.getColor();
+		g.setColor(Color.BLUE);
+		g.drawString("bullets count:"+bullets.size(), 50,50);
+		g.setColor(c);
+	}
 	// internal class for TankFrame
 	class myKeyListener extends KeyAdapter {
 	
@@ -99,10 +116,13 @@ public class TankFrame extends Frame {
 				case KeyEvent.VK_DOWN:
 					bd = false;
 					break;
-		
+				case KeyEvent.VK_CONTROL:
+					myTank.fire();
+					break;
 				default:
 					break;
 				}
+				
 				setDirection();
 			}
 		}
