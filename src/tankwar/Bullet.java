@@ -5,7 +5,7 @@ import java.awt.Graphics;
 
 public class Bullet {
 	
-	static final int B_WIDTH = 20, B_HEIGHT=20;
+	static final int B_WIDTH = 10, B_HEIGHT=10;
 	static final int B_SPEED = 10;
 	
 	private int x, y;
