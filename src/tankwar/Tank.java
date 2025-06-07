@@ -1,24 +1,27 @@
 package tankwar;
 
 import java.awt.Graphics;
+import java.util.Random;
 
 
 public class Tank {
 	private static final int SPEED = 5;
+	static final int WIDTH =50, HEIGHT = 50;
 	private int x;
 	private int y;
-	private Direction dir;
-	private boolean moving;
+	private Direction dir = Direction.DOWN;
+	private boolean moving = true;
 	private TankFrame tf;
+	private Group group;
+	private boolean living =true;
+	private Random random = new Random();
 
-	
-	public Tank(int x, int y, Direction dir, TankFrame tf) {
+	public Tank(int x, int y, Direction dir, Group group, TankFrame tf) {
 		this.x = x ;
 		this.y = y;
 		this.dir = dir;
 		this.tf = tf;
-		this.moving = false;
-
+		this.group = group;
 	}
 	
 	public void setMove(boolean m) {
@@ -33,13 +36,32 @@ public class Tank {
 		return this.dir;
 	}
 	
+	public Group getGroup() {
+		return this.group;
+	}
+	
+	public int getX() {
+		return this.x;
+	}
+	public int getY() {
+		return this.y;
+	}
+	
 	public void fire() {
 		int bx = this.x + Bullet.B_WIDTH;
 		int by = this.y + Bullet.B_HEIGHT;
-		tf.bullets.add(new Bullet(bx, by, this.dir));
+		tf.bullets.add(new Bullet(bx, by, this.dir, this.group, tf));
+	}
+	
+	public void die() {
+		this.living = false;
 	}
 	
 	public void paint(Graphics g) {
+		if(!this.living ) {
+			this.tf.tanks.remove(this);
+			return;
+		}
 		//g.fillRect(x,y, 50,50);
 		switch(dir) {
 		case LEFT:
@@ -63,7 +85,12 @@ public class Tank {
 				break;
 		
 		}
-
+		if(group == Group.BAD && random.nextInt(10) > 7) fire();
+		if( group == Group.BAD) {
+			if(x <=0 || y <=0 || x >= TankFrame.GAME_WIDTH || y >= TankFrame.GAME_HEIGHT) {
+				tf.tanks.remove(this);
+			}
+		}
 		//g.fillRect(x,y, 50,50);
 	}
 }

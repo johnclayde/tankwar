@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Frame;
 
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -11,11 +12,15 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class TankFrame extends Frame {
-	public static final int GAME_WIDTH=800, GAME_HEIGHT=600;
+	static final int GAME_WIDTH=800, GAME_HEIGHT=600;
 	private Tank myTank;
-	List<Bullet> bullets ;
+	List<Bullet> bullets = new ArrayList<Bullet>();
+	List<Tank> tanks = new ArrayList<Tank>();
+
+	Image  offScreenImage = null;
 	
 	public TankFrame() {
 		this.setSize(GAME_WIDTH, GAME_HEIGHT);
@@ -23,8 +28,9 @@ public class TankFrame extends Frame {
 		this.setVisible(true);
 		this.setTitle("TANK WAR");
 		
-		myTank = new Tank(200,200, Direction.DOWN, this);
-		bullets = new ArrayList<Bullet>();
+		myTank = new Tank(200,200, Direction.DOWN, Group.GOOD, this);
+		myTank.setMove(false);
+		
 		
 		this.addWindowListener(new WindowAdapter() {
 			@Override
@@ -38,12 +44,34 @@ public class TankFrame extends Frame {
 	
 
 	@Override
+	public void update(Graphics g) {
+		if(offScreenImage == null) {
+			offScreenImage = this.createImage(GAME_WIDTH, GAME_HEIGHT);
+			
+		}
+		 Graphics gOffScreen = offScreenImage.getGraphics();
+		 Color c = gOffScreen.getColor();
+		 gOffScreen.setColor(Color.BLACK);
+		 gOffScreen.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+		 gOffScreen.setColor(c);
+		 paint(gOffScreen);
+		 g.drawImage(offScreenImage, 0, 0, null);
+		 
+	}
+	@Override
 	public void paint(Graphics g) {
 		myTank.paint(g);
+		
 		for( int i = 0; i < bullets.size(); i++) {
-			if(bullets.get(i).isLiving()) {
-				bullets.get(i).paint(g);
-			} else {bullets.remove(i);}
+				bullets.get(i).paint(g);}	
+		
+		for(int i = 0; i < tanks.size(); i++) {
+			tanks.get(i).paint(g);
+		}
+		for(int i =0;i < bullets.size(); i++) {
+			for(int j = 0; j < tanks.size(); j++) {
+				bullets.get(i).collidwith(tanks.get(j));
+			}
 		}
 		displayInfo(g);
 
@@ -54,6 +82,7 @@ public class TankFrame extends Frame {
 		Color c = g.getColor();
 		g.setColor(Color.BLUE);
 		g.drawString("bullets count:"+bullets.size(), 50,50);
+		g.drawString("enmy count:"+tanks.size(), 50,70);
 		g.setColor(c);
 	}
 	// internal class for TankFrame
@@ -116,9 +145,11 @@ public class TankFrame extends Frame {
 				case KeyEvent.VK_DOWN:
 					bd = false;
 					break;
+					
 				case KeyEvent.VK_CONTROL:
 					myTank.fire();
 					break;
+					
 				default:
 					break;
 				}
